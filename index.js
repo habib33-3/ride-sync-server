@@ -21,6 +21,23 @@ app.use(
   })
 );
 app.use(cookieParser());
+
+const verifyToken = async (req, res, next) => {
+  const token = req.cookies?.token;
+
+  if (!token) {
+    return res.status(401).send({ message: "unauthorized" });
+  }
+  jwt.verify(token, secret, (err, decoded) => {
+    if (err) {
+      return res.status(401).send({ message: "unauthorized" });
+    }
+
+    req.user = decoded;
+    next();
+  });
+};
+
 app.get("/", (req, res) => {
   res.send("Server running....");
 });
@@ -50,7 +67,7 @@ async function run() {
     const serviceCollection = database.collection("service");
     const bookingCollection = database.collection("booking");
 
-    app.post("/api/v1/addService", async (req, res) => {
+    app.post("/api/v1/addService", verifyToken, async (req, res) => {
       const service = req.body;
       const result = await serviceCollection.insertOne(service);
       res.send(result);
@@ -63,10 +80,18 @@ async function run() {
       res.send(result);
     });
 
-    app.get("/api/v1/details/:id", async (req, res) => {
+    app.get("/api/v1/details/:id", verifyToken, async (req, res) => {
+      let query = {};
+      if (req.query?.email) {
+        query = { email: req.query.email };
+      }
+      if (req.query.email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden" });
+      }
+
       const id = req.params.id;
-      const query = { _id: new ObjectId(id) };
-      const result = await serviceCollection.findOne(query);
+      const data = { _id: new ObjectId(id) };
+      const result = await serviceCollection.findOne(data);
 
       res.send(result);
     });
