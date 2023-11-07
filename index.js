@@ -40,6 +40,7 @@ async function run() {
 
     const database = client.db("rideSyncDb");
     const serviceCollection = database.collection("service");
+    const bookingCollection = database.collection("booking");
 
     app.post("/api/v1/addService", async (req, res) => {
       const service = req.body;
@@ -57,8 +58,15 @@ async function run() {
     app.get("/api/v1/details/:id", async (req, res) => {
       const id = req.params.id;
       const query = { _id: new ObjectId(id) };
-      const result =await serviceCollection.findOne(query);
-    
+      const result = await serviceCollection.findOne(query);
+
+      res.send(result);
+    });
+
+    app.post("/api/v1/addBooking", async (req, res) => {
+      const service = req.body;
+      const result = await bookingCollection.insertOne(service);
+      
       res.send(result);
     });
 
