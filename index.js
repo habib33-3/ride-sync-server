@@ -2,6 +2,8 @@ import express from "express";
 import cors from "cors";
 import { MongoClient, ObjectId, ServerApiVersion } from "mongodb";
 import "dotenv/config";
+import jwt from "jsonwebtoken";
+import cookieParser from "cookie-parser";
 
 const app = express();
 
@@ -9,10 +11,16 @@ const port = process.env.PORT || 5000;
 
 const user = process.env.DB_USER;
 const password = process.env.DB_PASS;
+const secret = process.env.ACCESS_TOKEN;
 
 app.use(express.json());
-app.use(cors());
-
+app.use(
+  cors({
+    origin: ["http://localhost:5173", "https://ride-sync-66a08.web.app/"],
+    credentials: true,
+  })
+);
+app.use(cookieParser());
 app.get("/", (req, res) => {
   res.send("Server running....");
 });
@@ -66,8 +74,22 @@ async function run() {
     app.post("/api/v1/addBooking", async (req, res) => {
       const service = req.body;
       const result = await bookingCollection.insertOne(service);
-      
+
       res.send(result);
+    });
+
+    app.post("/api/v1/createToken", async (req, res) => {
+      const user = req.body;
+
+      const token = jwt.sign(user, secret, { expiresIn: "2d" });
+
+      res
+        .cookie("token", token, {
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
     });
 
     await client.db("admin").command({ ping: 1 });
