@@ -20,6 +20,7 @@ app.use(
       "http://localhost:5173",
       "https://ride-sync-66a08.web.app",
       "https://ride-sync-66a08.firebaseapp.com",
+      "https://ride-sync-client.vercel.app"
     ],
     credentials: true,
   })
