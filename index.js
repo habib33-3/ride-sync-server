@@ -16,10 +16,15 @@ const secret = process.env.ACCESS_TOKEN;
 app.use(express.json());
 app.use(
   cors({
-    origin: ["http://localhost:5173", "https://ride-sync-66a08.web.app/"],
+    origin: [
+      "http://localhost:5173",
+      "https://ride-sync-66a08.web.app",
+      "https://ride-sync-66a08.firebaseapp.com",
+    ],
     credentials: true,
   })
 );
+
 app.use(cookieParser());
 
 const verifyToken = async (req, res, next) => {
@@ -153,29 +158,49 @@ async function run() {
         },
       };
 
-      
-
-      
-
       const result = await serviceCollection.updateOne(filter, service);
       res.send(result);
     });
 
-          app.get("/api/v1/user/bookings", verifyToken, async (req, res) => {
-              const email = req.query.email;
+    app.get("/api/v1/user/bookings", verifyToken, async (req, res) => {
+      const email = req.query.email;
 
-              if (email !== req.user.email) {
-                return res.status(403).send({ message: "forbidden" });
-              }
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden" });
+      }
 
-              const query = { userEmail: email };
+      const query = { userEmail: email };
 
-              const cursor = bookingCollection.find(query);
+      const cursor = bookingCollection.find(query);
 
-              const result = await cursor.toArray();
+      const result = await cursor.toArray();
 
-              res.send(result);
-            });
+      res.send(result);
+    });
+
+    app.get("/api/v1/provider/bookings", verifyToken, async (req, res) => {
+      const email = req.query.email;
+
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden" });
+      }
+
+      const query = { providerEmail: email };
+
+      const cursor = bookingCollection.find(query);
+
+      const result = await cursor.toArray();
+
+      res.send(result);
+    });
+
+    app.get("/api/v1/otherServices", async (req, res) => {
+      const email = req.query.provider;
+      const query = { providerEmail: email };
+      const cursor = serviceCollection.find(query);
+      const result = await cursor.toArray();
+      res.send(result);
+    });
 
     await client.db("admin").command({ ping: 1 });
     console.log(
