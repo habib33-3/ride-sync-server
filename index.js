@@ -81,17 +81,13 @@ async function run() {
     });
 
     app.get("/api/v1/details/:id", verifyToken, async (req, res) => {
-      let query = {};
-      if (req.query?.email) {
-        query = { email: req.query.email };
-      }
       if (req.query.email !== req.user.email) {
         return res.status(403).send({ message: "forbidden" });
       }
 
       const id = req.params.id;
-      const data = { _id: new ObjectId(id) };
-      const result = await serviceCollection.findOne(data);
+      const query = { _id: new ObjectId(id) };
+      const result = await serviceCollection.findOne(query);
 
       res.send(result);
     });
@@ -115,6 +111,22 @@ async function run() {
           sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
         })
         .send({ success: true });
+    });
+
+    app.get("/api/v1/manageService", verifyToken, async (req, res) => {
+      const email = req.query.email;
+
+      if (email !== req.user.email) {
+        return res.status(403).send({ message: "forbidden" });
+      }
+
+      const query = { providerEmail: email };
+
+      const cursor = serviceCollection.find(query);
+
+      const result = await cursor.toArray();
+
+      res.send(result);
     });
 
     await client.db("admin").command({ ping: 1 });
