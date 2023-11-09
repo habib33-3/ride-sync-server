@@ -20,7 +20,7 @@ app.use(
       "http://localhost:5173",
       "https://ride-sync-66a08.web.app",
       "https://ride-sync-66a08.firebaseapp.com",
-      "https://ride-sync-client.vercel.app"
+      "https://ride-sync-client.vercel.app",
     ],
     credentials: true,
   })
@@ -201,6 +201,11 @@ async function run() {
       const cursor = serviceCollection.find(query);
       const result = await cursor.toArray();
       res.send(result);
+    });
+
+    app.post("/api/v1/logOut", async (req, res) => {
+      const user = req.body;
+      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
     await client.db("admin").command({ ping: 1 });
