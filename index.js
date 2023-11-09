@@ -208,6 +208,23 @@ async function run() {
       res.clearCookie("token", { maxAge: 0 }).send({ success: true });
     });
 
+    app.put("/api/v1/booking/setStatus/:id", async (req, res) => {
+      const id = req.params.id;
+      const booking = req.body;
+      const filter = { _id: new ObjectId(id) };
+      const options = { upsert: true };
+
+      const updatedBooking = {
+        $set: {
+          status: booking.status,
+        },
+      };
+
+      const result = await movies.updateOne(filter, updatedBooking, options);
+      console.log(booking);
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
