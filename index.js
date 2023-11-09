@@ -205,7 +205,14 @@ async function run() {
 
     app.post("/api/v1/logOut", async (req, res) => {
       const user = req.body;
-      res.clearCookie("token", { maxAge: 0 }).send({ success: true });
+      res
+        .clearCookie("token", {
+          maxAge: 0,
+          httpOnly: true,
+          secure: process.env.NODE_ENV === "production",
+          sameSite: process.env.NODE_ENV === "production" ? "none" : "strict",
+        })
+        .send({ success: true });
     });
 
     app.put("/api/v1/booking/setStatus/:id", async (req, res) => {
