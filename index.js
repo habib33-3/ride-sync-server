@@ -72,6 +72,7 @@ async function run() {
     const database = client.db("rideSyncDb");
     const serviceCollection = database.collection("service");
     const bookingCollection = database.collection("booking");
+    const blogCollection = database.collection("blog");
 
     app.post("/api/v1/addService", verifyToken, async (req, res) => {
       const service = req.body;
@@ -229,6 +230,14 @@ async function run() {
 
       const result = await movies.updateOne(filter, updatedBooking, options);
       console.log(booking);
+      res.send(result);
+    });
+
+    app.post("/api/v1/postBlogs", async (req, res) => {
+      const blog = req.body;
+
+      const result = await blogCollection.insertOne(blog);
+
       res.send(result);
     });
 
