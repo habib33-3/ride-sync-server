@@ -241,6 +241,12 @@ async function run() {
       res.send(result);
     });
 
+    app.get("/api/v1/getBlogs", async (req, res) => {
+      const result = await blogCollection.find().toArray();
+
+      res.send(result);
+    });
+
     await client.db("admin").command({ ping: 1 });
     console.log(
       "Pinged your deployment. You successfully connected to MongoDB!"
